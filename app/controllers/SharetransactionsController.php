@@ -73,7 +73,7 @@ class SharetransactionsController extends \BaseController {
 						$sharetransaction2= new Sharetransaction;
 						$sharetransaction2->date = Input::get('date');
 						$sharetransaction2->shareaccount()->associate($shareaccount);
-						if(!empty(Input::get('amount'))){
+						if(!empty(Input::get('petrol_investment'))){
 								$sharetransaction2->amount =Input::get('petrol_investment');
 		        }
 						$sharetransaction2->amount =0;

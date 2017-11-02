@@ -149,8 +149,8 @@ class VehicleIncomesController extends \BaseController {
 
         Savingtransaction::vtransact($date, $savingaccount, $category, $saving_amount, $type, $description, $transacted_by,$member,$vid);
         /*Record Loan Repayment*/
-        if(Input::get('loanproduct_id') != '' ){
-            if(Input::get('loans') != '' ){
+        if(!empty(Input::get('loanproduct_id'))){
+            if(!empty(Input::get('loans')) ){
                 $loanamt = str_replace( ',', '', Input::get('loans'));
             }else{
                 $loanamt = 0.00;
@@ -159,7 +159,7 @@ class VehicleIncomesController extends \BaseController {
             Loanrepayment::vrepayLoan($loanamt,$loanaccount_id,$member,$vid);
         }
         /*Record Shares*/
-        if(Input::get('shares') != 0.00 || Input::get('shares') != ''){
+        if(Input::get('shares') != 0.00 || !empty(Input::get('shares'))){
             $share = Shareaccount::where('member_id',$assign->member_id)
                 ->first();
             $shareaccount = Shareaccount::findOrFail($share->id);
@@ -167,10 +167,10 @@ class VehicleIncomesController extends \BaseController {
             $sharetransaction = new Sharetransaction;
             $sharetransaction->date = date("Y-m-d");
             $sharetransaction->shareaccount()->associate($shareaccount);
-            if(Input::get('shares')== ''){
-               $sharetransaction->amount = 0.00;
-            }
-            $sharetransaction->amount = str_replace( ',', '', Input::get('shares'));
+						if(!empty(Input::get('shares'))){
+								$sharetransaction->amount =Input::get('shares');
+						}
+            $sharetransaction->amount = 0;
             $sharetransaction->type = "credit";
             $sharetransaction->pay_for='shares';
             $sharetransaction->description = "Shares from vehicle income";
@@ -187,9 +187,12 @@ class VehicleIncomesController extends \BaseController {
 		$sharetransaction3 = new Sharetransaction;
 		$sharetransaction3->date = date("Y-m-d");
 		$sharetransaction3->shareaccount()->associate($shareaccount3);
-		$sharetransaction3->amount = str_replace( ',', '', Input::get('petrol_investment'));
+		if(!empty(Input::get('petrol_investment'))){
+				$sharetransaction3->amount =Input::get('petrol_investment');
+		}
+		$sharetransaction3->amount =0;
 		$sharetransaction3->type = "credit";
-        $sharetransaction3->pay_for='others';
+        $sharetransaction3->pay_for='petrol';
 		$sharetransaction3->description = "Petrol Station Investment";
 		$sharetransaction3->save();
 
@@ -218,7 +221,10 @@ class VehicleIncomesController extends \BaseController {
 		$sharetransaction33 = new Sharetransaction;
 		$sharetransaction33->date = date("Y-m-d");
 		$sharetransaction33->shareaccount()->associate($shareaccount33);
-		$sharetransaction33->amount = str_replace( ',', '', Input::get('insurance'));
+		if(!empty(Input::get('insurance'))){
+				$sharetransaction33->amount =Input::get('insurance');
+		}
+		$sharetransaction33->amount = 0;
 		$sharetransaction33->type = "credit";
         $sharetransaction33->pay_for='others';
 		$sharetransaction33->description = "Insurance Payment";
@@ -235,10 +241,10 @@ class VehicleIncomesController extends \BaseController {
 		$sharetransaction333 = new Sharetransaction;
 		$sharetransaction333->date = date("Y-m-d");
 		$sharetransaction333->shareaccount()->associate($shareaccount333);
-        if(Input::get('fee_amount') ==''){
-            $sharetransaction333->amount = 0.00;
-        }
-		$sharetransaction333->amount = str_replace( ',', '', Input::get('fee_amount'));
+		if(!empty(Input::get('fee_amount'))){
+				$sharetransaction333->amount =Input::get('fee_amount');
+		}
+		$sharetransaction333->amount = 0;
 		$sharetransaction333->type = "credit";
         $sharetransaction333->pay_for= 'membership';
 		$sharetransaction333->description = "Membership Fee Payment";
