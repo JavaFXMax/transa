@@ -12,7 +12,7 @@ $(document).ready(function() {
 
     var purposewrapper         = $(".purpose_fields_wrap"); //Fields wrapper
     var purpose_add_button      = $(".add_purpose_button"); //Add button ID
-   
+
     var z = 0; //initial count
     $(purpose_add_button).click(function(e){ //on add input button click
         e.preventDefault();
@@ -21,11 +21,11 @@ $(document).ready(function() {
             $(purposewrapper).append('<div style="margin-top:10px;margin-left:-15px;"><div class="col-lg-10 form-group"><input class="form-control" placeholder="payment name" name="payment_names[]" style="margin-bottom:10px;margin-right"><input class="form-control" placeholder="amount" type="text" name="amount[]" id="amount"></div><a style="margin-top:70px;margin-left:-20px" href="#" class="col-lg-1 remove_purpose_field">Remove</a></div>'); //add input box
         }
     });
-   
+
     $(purposewrapper).on("click",".remove_purpose_field", function(e){ //user click on remove text
         e.preventDefault(); $(this).parent('div').remove(); z--;
     });
-    
+
 });
 </script>
 <script type="text/javascript">
@@ -42,20 +42,20 @@ if($(this).val() == "Expense"){
 });
 
  $('#vehicle_id').change(function(){
-        $.get("{{ url('api/loanaccount')}}", 
-        { option: $(this).val() }, 
+        $.get("{{ url('api/loanaccount')}}",
+        { option: $(this).val() },
         function(data) {
-            $('#loanproduct').empty(); 
+            $('#loanproduct').empty();
             $('#loanproduct').append("<option value=''>----------------select Member Loan Product--------------------</option>");
             $.each(data, function(key, element) {
             $('#loanproduct').append("<option value='" + key +"'>" + element + "</option>");
             });
         });
     });
-    
+
 $('#vehicle_id').change(function(){
-    $.get("{{ url('api/membership_status')}}", 
-    { option: $(this).val() }, 
+    $.get("{{ url('api/membership_status')}}",
+    { option: $(this).val() },
     function(data) {
         $("#fee_amount").val('');
         $("#fee_amount").removeAttr('disabled');
@@ -65,10 +65,10 @@ $('#vehicle_id').change(function(){
         }
     });
 });
-    
+
 $('#vehicle_id').change(function(){
-    $.get("{{ url('api/share_status')}}", 
-    { option: $(this).val() }, 
+    $.get("{{ url('api/share_status')}}",
+    { option: $(this).val() },
     function(data) {
         $("#shares").val('');
         $("#shares").removeAttr('disabled');
@@ -142,8 +142,6 @@ if(balance<loans || amount==''){
   loans = $('#loans').val('0.00');
 }
 });
-    
-    
 });
 </script>
 <br/>
@@ -151,19 +149,19 @@ if(balance<loans || amount==''){
 	<div class="col-lg-12">
       <h3>Vehicle Incomes</h3>
       <hr>
-    </div>	
+    </div>
 </div>
 <div class="row">
 	<div class="col-lg-10">
 		 @if ($errors->has())
         <div class="alert alert-danger">
             @foreach ($errors->all() as $error)
-                {{ $error }}<br>        
+                {{ $error }}<br>
             @endforeach
         </div>
         @endif
 		 <form method="POST" action="{{{ URL::to('vehicleincomes') }}}" accept-charset="UTF-8">
-    <fieldset> 
+    <fieldset>
         <div class="form-group col-md-6">
             <label for="username">Vehicle <span style="color:red">*</span></label>
             <select name="vehicle_id" id="vehicle_id" class="form-control" data-live-search="true" required>
@@ -174,7 +172,7 @@ if(balance<loans || amount==''){
                 </option>
                 @endforeach
             </select>
-        </div>  
+        </div>
         <div class="form-group col-md-6">
             <label for="username">Date <span style="color:red">*</span></label>
             <div class="right-inner-addon ">
@@ -182,7 +180,6 @@ if(balance<loans || amount==''){
             <input required class="form-control datepicker" readonly="readonly" placeholder="" type="text" name="date" id="date" value="{{{ Input::old('date') }}}">
         </div>
        </div>
-        
        <div class="form-group col-md-6">
             <label for="username" class="fee_amount">Membership Fee
                 <span style="color:red">*</span>
@@ -206,29 +203,29 @@ if(balance<loans || amount==''){
         </div>
         <div class="form-group col-md-6">
             <label for="username">
-                Insurance
+              Insurance
             </label>
             <input required class="form-control" placeholder="" type="text" name="insurance" id="offamt" value="{{{ Input::old('insurance') }}}">
         </div>
         <div class="form-group col-md-6">
-            <label for="username">Petrol Station Investment 
+            <label for="username">
+              Petrol Station Investment
                 <span style="color:red">*</span>
             </label>
             <input required class="form-control" type="text" name="petrol_investment" id="offamt" value="{{{ Input::old('petrol_investment') }}}">
         </div>
-
         <div class="form-group col-md-6">
-            <label for="username">Commissions/Savings</label>
+            <label for="username">Deposits</label>
             <input required class="form-control" placeholder="" type="text" name="savings" id="savings" value="{{{ Input::old('savings') }}}">
         </div>
-
         <div class="form-group col-md-6">
-            <label for="username">Shares 
+            <label for="username">
+              Shares
             </label>
             <input required class="form-control" placeholder="" type="text" name="shares" id="shares" value="{{{ Input::old('shares') }}}">
         </div>
         <!--Additional Payments For -->
-        <div class="purpose_fields_wrap form-group col-lg-8" >        
+        <div class="purpose_fields_wrap form-group col-lg-8" >
             <button class="btn btn-info add_purpose_button">Add Additional Payments</button>
         </div>
         <!-- Additional Payments For-->
@@ -236,7 +233,7 @@ if(balance<loans || amount==''){
             <label for="username">Asset Account <span style="color:red">*</span> </label>
             <select  required class="form-control" name="asset_id" id="account">
             <option> select account</option>
-              @foreach($asset as $account)  
+              @foreach($asset as $account)
                     <option value="{{$account->id}}">{{$account->name}}</option>
               @endforeach
             </select>
@@ -246,7 +243,7 @@ if(balance<loans || amount==''){
             <label for="username">Liability Account <span style="color:red">*</span> </label>
             <select  required class="form-control" name="ainc_id" id="account">
             <option> select account</option>
-              @foreach($ainc as $account)  
+              @foreach($ainc as $account)
                     <option value="{{$account->id}}">{{$account->name}}</option>
               @endforeach
             </select>
@@ -256,7 +253,7 @@ if(balance<loans || amount==''){
             <label for="username">Equity Account <span style="color:red">*</span> </label>
             <select  required class="form-control" name="eq_id" id="account">
             <option> select account</option>
-              @foreach($equities as $account)  
+              @foreach($equities as $account)
                     <option value="{{$account->id}}">{{$account->name}}</option>
               @endforeach
             </select>
