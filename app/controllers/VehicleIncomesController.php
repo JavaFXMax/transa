@@ -45,14 +45,14 @@ class VehicleIncomesController extends \BaseController {
 		/*Record Additional Payments*/
         $assign = Vehicle::where('id',Input::get('vehicle_id'))->first();
         $sum_amount=0;
-        for ($i=0; $i <count(array_get($data, 'payment_names')) ; $i++) { 
-            if((array_get($data, 'payment_names')[$i] != '' || 
+        for ($i=0; $i <count(array_get($data, 'payment_names')) ; $i++) {
+            if((array_get($data, 'payment_names')[$i] != '' ||
                 array_get($data, 'payment_names')[$i] != null)){
                 $date = Input::get('date');
                 $saving = Savingaccount::where('member_id',$assign->member_id)
                     ->first();
                 $savingaccount = Savingaccount::findOrFail($saving->id);
-                
+
                 $date = Input::get('date');
 
                 $saving_amount =  array_get($data, 'amount')[$i];
@@ -82,7 +82,7 @@ class VehicleIncomesController extends \BaseController {
                 $vid = $assign->id;
 
                 Savingtransaction::vtransact($date, $savingaccount, $category, $saving_amount, $type, $description, $transacted_by,$member,$vid);
-              } 
+              }
             $sum_amount+=array_get($data, 'amount')[$i];
         }
 		// check if code exists
@@ -98,7 +98,7 @@ class VehicleIncomesController extends \BaseController {
 		$vehicle->income_account_id = Input::get('ainc_id');
 		$vehicle->equity_account_id = Input::get('eq_id');
         $vehicle->save();
-        
+
         $cont = 0;
         /*Record Vehicle Daily Contribution*/
         if(Input::get('offamt') > 0 || Input::get('offamt') != null ){
@@ -114,14 +114,14 @@ class VehicleIncomesController extends \BaseController {
             $contribution->save();
 
             $cont = $contribution->id;
-        }	
+        }
         /*Record Savings/Commissions*/
         $date = Input::get('date');
 		$saving = Savingaccount::where('member_id',$assign->member_id)
             ->first();
 		$savingaccount = Savingaccount::findOrFail($saving->id);
 		$date = Input::get('date');
-		
+
 		$saving_amount = Input::get('savings');
 		$type = "credit";
 		$description = "Savings/Commissions from vehicle income";
@@ -147,7 +147,7 @@ class VehicleIncomesController extends \BaseController {
         $vehsav->update();
         $vid = $vehicle->id;
 
-        Savingtransaction::vtransact($date, $savingaccount, $category, $saving_amount, $type, $description, $transacted_by,$member,$vid);        
+        Savingtransaction::vtransact($date, $savingaccount, $category, $saving_amount, $type, $description, $transacted_by,$member,$vid);
         /*Record Loan Repayment*/
         if(Input::get('loanproduct_id') != '' ){
             if(Input::get('loans') != '' ){
@@ -168,7 +168,7 @@ class VehicleIncomesController extends \BaseController {
             $sharetransaction->date = date("Y-m-d");
             $sharetransaction->shareaccount()->associate($shareaccount);
             if(Input::get('shares')== ''){
-               $sharetransaction->amount = 0.00; 
+               $sharetransaction->amount = 0.00;
             }
             $sharetransaction->amount = str_replace( ',', '', Input::get('shares'));
             $sharetransaction->type = "credit";
@@ -200,7 +200,7 @@ class VehicleIncomesController extends \BaseController {
         $acc = Account::where('name','Cash Account')->first();
         if(Input::get('petrol_investment') > 0 ){
             $data = array(
-                'date' => array_get($data, 'date'), 
+                'date' => array_get($data, 'date'),
                 'debit_account' => array_get($data, 'asset_id'),
                 'credit_account' => array_get($data, 'eq_id'),
                 'description' => 'Petrol Station Investment',
@@ -251,9 +251,9 @@ class VehicleIncomesController extends \BaseController {
         $acc = Account::where('name','Cash Account')->first();
 
         if(Input::get('offamt') > 0 ){
-        	$dt = array( 
-        	'member_id'=>$assign->member_id, 
-        	'date'=>Input::get('date'), 
+        	$dt = array(
+        	'member_id'=>$assign->member_id,
+        	'date'=>Input::get('date'),
         	'amount'=>Input::get('offamt'),
         	'type'=>'debit'
         	);
@@ -335,7 +335,7 @@ class VehicleIncomesController extends \BaseController {
 		$vehicle->update();
 
         $lamt = 0.00;
-        
+
 		if(Input::get('loanproduct_id') != '' ){
         $lamt = str_replace( ',', '', Input::get('loans'));
 		}else{
@@ -407,7 +407,7 @@ class VehicleIncomesController extends \BaseController {
 		$contribution->save();
         }
 
-        $amt = str_replace( ',', '', Input::get('amount'))-$lamt-$offm-str_replace( ',', '', Input::get('shares'));		
+        $amt = str_replace( ',', '', Input::get('amount'))-$lamt-$offm-str_replace( ',', '', Input::get('shares'));
 
         $date = Input::get('date');
 		$transAmount = $amt;
@@ -417,7 +417,7 @@ class VehicleIncomesController extends \BaseController {
 		$savingaccount = Savingaccount::findOrFail($saving->id);
 		$date = Input::get('date');
 		$amount = 0.00;
-		
+
 		$amount = $amt;
 		$type = "credit";
 		$description = "Savings/Commissions from vehicle income";
@@ -456,7 +456,7 @@ class VehicleIncomesController extends \BaseController {
         $journal->update();
 
 		Savingtransaction::vtransact($date, $savingaccount, $category, $amount, $type, $description, $transacted_by,$member,$vid);
-        
+
         if(Input::get('loanproduct_id') != '' ){
         $loanamt = str_replace( ',', '', Input::get('loans'));
 
@@ -489,12 +489,12 @@ class VehicleIncomesController extends \BaseController {
         $journal = Loantransaction::findOrFail($vehicle->loantransaction_id);
         $journal->void = 1;
         $journal->update();
-        
+
 
         Loanrepayment::vrepayLoan($loanamt,$loanaccount_id,$member,$vid);
     }
 
-        
+
         if(Input::get('shares') != 0.00 || Input::get('shares') != ''){
 
 		$sharetransaction    = Sharetransaction::findOrFail($vehicle->sharetransaction_id);
@@ -512,9 +512,9 @@ class VehicleIncomesController extends \BaseController {
 
         if(Input::get('offamt') > 0 ){
 
-		
+
 			$data = array(
-			'date' => array_get($data, 'date'), 
+			'date' => array_get($data, 'date'),
 			'debit_account' => array_get($data, 'asset_id'),
 			'credit_account' => array_get($data, 'eq_id'),
 			'description' => 'office contribution',
@@ -522,14 +522,14 @@ class VehicleIncomesController extends \BaseController {
 			'initiated_by' => Confide::user()->username,
 			'cid' => $cont->id
 			);
-		
+
 		$journal = new Journal;
 
 		$journal->journal_contentry($data);
         }else if(Input::get('offamt') <= 0 ){
-        
+
 			$data = array(
-			'date' => array_get($data, 'date'), 
+			'date' => array_get($data, 'date'),
 			'debit_account' => array_get($data, 'asset_id'),
 			'credit_account' => array_get($data, 'eq_id'),
 			'description' => 'office contribution',
@@ -537,16 +537,16 @@ class VehicleIncomesController extends \BaseController {
 			'initiated_by' => Confide::user()->username,
 			'cid' => $cont->id
 			);
-		
+
 		$journal = new Journal;
 
 		$journal->journal_contentry($data);
-         
-        }
-       
 
-					
-		
+        }
+
+
+
+
 
 		return Redirect::route('vehicleincomes.index');
 	}
@@ -626,7 +626,7 @@ class VehicleIncomesController extends \BaseController {
         $journal->void = 1;
         $journal->update();
 
-        
+
         $journal = Journal::findOrFail($vehicle->equity_credit_journal_id);
         $journal->void = 1;
         $journal->update();
@@ -634,7 +634,7 @@ class VehicleIncomesController extends \BaseController {
         $journal = Journal::findOrFail($vehicle->equity_debit_journal_id);
         $journal->void = 1;
         $journal->update();
-    
+
 		Vehicleincome::destroy($id);
 
 		return Redirect::route('vehicleincomes.index');

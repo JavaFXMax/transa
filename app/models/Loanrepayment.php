@@ -12,106 +12,63 @@ class Loanrepayment extends \Eloquent {
 
 
 	public function loanaccount(){
-
 		return $this->belongsTo('Loanaccount');
 	}
 
-
 	public static function getPrincipalPaid($loanaccount){
-
-
-			$paid = DB::table('loanrepayments')->where('void',0)->where('loanaccount_id', '=', $loanaccount->id)->sum('principal_paid');
-
-			return $paid;
+					$paid = DB::table('loanrepayments')->where('void',0)->where('loanaccount_id', '=', $loanaccount->id)
+					->sum('principal_paid');
+					return $paid;
 	}
-
 
 	public static function getInterestPaid($loanaccount){
-
-
 			$paid = DB::table('loanrepayments')->where('void',0)->where('loanaccount_id', '=', $loanaccount->id)->sum('interest_paid');
-
-			
 			return $paid;
 	}
 
-
-
 	public static function repayLoan($data){
-
-		$loanaccount_id = array_get($data, 'loanaccount_id');
-
-		$loanaccount = Loanaccount::findorfail($loanaccount_id);
-        
-        $amount = array_get($data, 'amount');
-        
-		$category = "Cash";
-		$member = array_get($data, 'member');
-		$date = array_get($data, 'date');
-
-
-		$principal_due = Loantransaction::getPrincipalDue($loanaccount);
-		$interest_due = Loantransaction::getInterestDue($loanaccount);
-
-		$total_due = $principal_due + $interest_due;
-
-		$paymentamount = $amount;
-
- 
-
- 	if($paymentamount < $total_due){
- 		$payamount = $paymentamount;
-			//pay interest first
- 		if($payamount >= $interest_due){
-			Loanrepayment::payInterest($loanaccount, $date, $interest_due);
-			$payamount = $payamount - $interest_due;
-			if($payamount > 0){
-				Loanrepayment::payPrincipal($loanaccount, $date, $payamount);
-			}
- 		}
-
- 		elseif($payamount < $interest_due){
-			Loanrepayment::payInterest($loanaccount, $date, $payamount);
-			
-			
- 		}
-
-		
-
-	}
-
-
-		if($paymentamount >= $total_due){
-
-			$payamount = $paymentamount;
-			//pay interest first 
-			Loanrepayment::payInterest($loanaccount, $date, $interest_due);
-			$payamount = $payamount - $interest_due;
-
-			//pay principal with the remaining amount
-
-			Loanrepayment::payPrincipal($loanaccount, $date, $payamount);
-		}
-
-
-
-
-		
-		Loantransaction::repayLoan($loanaccount, $amount, $date, $category, $member);
-
-
-		
-
-
-
+					$loanaccount_id = array_get($data, 'loanaccount_id');
+					$loanaccount = Loanaccount::findorfail($loanaccount_id);
+			    $amount = array_get($data, 'amount');
+					$category = "Cash";
+					$member = array_get($data, 'member');
+					$date = array_get($data, 'date');
+					$principal_due = Loanaccount::getLoanAmount($loanaccount) / $loanaccount->repayment_duration;
+					$interest_due = Loantransaction::getInterestDue($loanaccount);
+					$total_due = $principal_due + $interest_due;
+					$paymentamount = $amount;
+				 	if($paymentamount < $total_due){
+										 		$payamount = $paymentamount;
+													//pay interest first
+										 		if($payamount >= $interest_due){
+																				Loanrepayment::payInterest($loanaccount, $date, $interest_due);
+																				$payamount = $payamount - $interest_due;
+																				if($payamount > 0){
+																					Loanrepayment::payPrincipal($loanaccount, $date, $payamount);
+																				}
+										 		}elseif($payamount < $interest_due){
+																		Loanrepayment::payInterest($loanaccount, $date, $payamount);
+									 		}
+											$arrears_amount = array_get($data, 'amount_supposed_to_pay') -  array_get($data, 'amount');
+					}
+					if($paymentamount >= $total_due){
+										$payamount = $paymentamount;
+										//pay interest first
+										Loanrepayment::payInterest($loanaccount, $date, $interest_due);
+										$payamount = $payamount - $interest_due;
+										//pay principal with the remaining amount
+										Loanrepayment::payPrincipal($loanaccount, $date, $payamount);
+										$arrears_amount = 0;
+					}
+					Loantransaction::repayLoan($loanaccount, $amount, $date, $category, $member, $arrears_amount);
 	}
 
 	public static function vrepayLoan($loanamt,$loanaccount_id,$member,$vid){
 
 		$loanaccount = Loanaccount::findorfail($loanaccount_id);
-        
+
         $amount = $loanamt;
-        
+
 		$category = "Cash";
 		$date = date('Y-m-d');
 
@@ -123,7 +80,7 @@ class Loanrepayment extends \Eloquent {
 
 		$paymentamount = $amount;
 
- 
+
 
  	if($paymentamount < $total_due){
  		$payamount = $paymentamount;
@@ -138,11 +95,11 @@ class Loanrepayment extends \Eloquent {
 
  		elseif($payamount < $interest_due){
 			Loanrepayment::payInterest($loanaccount, $date, $payamount);
-			
-			
+
+
  		}
 
-		
+
 
 	}
 
@@ -150,7 +107,7 @@ class Loanrepayment extends \Eloquent {
 		if($paymentamount >= $total_due){
 
 			$payamount = $paymentamount;
-			//pay interest first 
+			//pay interest first
 			Loanrepayment::payInterest($loanaccount, $date, $interest_due);
 			$payamount = $payamount - $interest_due;
 
@@ -163,11 +120,11 @@ class Loanrepayment extends \Eloquent {
 
 
 
-		
+
 		Loantransaction::vrepayLoan($loanaccount, $amount, $date, $category, $member, $vid);
 
 
-		
+
 
 
 
@@ -188,7 +145,7 @@ class Loanrepayment extends \Eloquent {
 		$principal_bal = Loanaccount::getPrincipalBal($loanaccount);
 		$interest_bal = Loanaccount::getInterestBal($loanaccount);
 
-		
+
 
 		//pay principal
 
@@ -197,12 +154,12 @@ class Loanrepayment extends \Eloquent {
  		//pay interest
  		Loanrepayment::payInterest($loanaccount, $date, $interest_bal);
 
- 
-		
+
+
 		Loantransaction::repayLoan($loanaccount, $amount, $date);
 
 
-		
+
 
 
 
@@ -212,20 +169,16 @@ class Loanrepayment extends \Eloquent {
 
 
 	public static function payPrincipal($loanaccount, $date, $principal_due){
-
-		$repayment = new Loanrepayment;
-
-
-		$repayment->loanaccount()->associate($loanaccount);
-		$repayment->date = $date;
-		$repayment->principal_paid = $principal_due;
-		$repayment->save();
-
+				$repayment = new Loanrepayment;
+				$repayment->loanaccount()->associate($loanaccount);
+				$repayment->date = $date;
+				$repayment->principal_paid = $principal_due;
+				$repayment->save();
 
 		$account = Loanposting::getPostingAccount($loanaccount->loanproduct, 'principal_repayment');
 
 		$data = array(
-			'credit_account' =>$account['credit'] , 
+			'credit_account' =>$account['credit'] ,
 			'debit_account' =>$account['debit'] ,
 			'date' => $date,
 			'amount' => $principal_due,
@@ -244,10 +197,7 @@ class Loanrepayment extends \Eloquent {
 
 
 	public static function payInterest($loanaccount, $date, $interest_due){
-
 		$repayment = new Loanrepayment;
-
-
 		$repayment->loanaccount()->associate($loanaccount);
 		$repayment->date = $date;
 		$repayment->interest_paid = $interest_due;
@@ -258,7 +208,7 @@ class Loanrepayment extends \Eloquent {
 		$account = Loanposting::getPostingAccount($loanaccount->loanproduct, 'interest_repayment');
 
 		$data = array(
-			'credit_account' =>$account['credit'] , 
+			'credit_account' =>$account['credit'] ,
 			'debit_account' =>$account['debit'] ,
 			'date' => $date,
 			'amount' => $interest_due,
@@ -292,7 +242,7 @@ class Loanrepayment extends \Eloquent {
 		$account = Loanposting::getPostingAccount($loanaccount->loanproduct, 'principal_repayment');
 
 		$data = array(
-			'pcredit_account' =>$account['credit'] , 
+			'pcredit_account' =>$account['credit'] ,
 			'pdebit_account' =>$account['debit'] ,
 			'date' => $date,
 			'amount' => $principal_due,
@@ -328,7 +278,7 @@ class Loanrepayment extends \Eloquent {
 		$account = Loanposting::getPostingAccount($loanaccount->loanproduct, 'interest_repayment');
 
 		$data = array(
-			'icredit_account' =>$account['credit'] , 
+			'icredit_account' =>$account['credit'] ,
 			'idebit_account' =>$account['debit'] ,
 			'date' => $date,
 			'amount' => $interest_due,

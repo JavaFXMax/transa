@@ -10,10 +10,8 @@ class LoanrepaymentsController extends \BaseController {
 	public function index()
 	{
 		$loanrepayments = Loanrepayment::where('void',0)->get();
-
 		return View::make('loanrepayments.index', compact('loanrepayments'));
 	}
-
 	/**
 	 * Show the form for creating a new loanrepayment
 	 *
@@ -21,23 +19,16 @@ class LoanrepaymentsController extends \BaseController {
 	 */
 	public function create($id)
 	{
-
-		$loanaccount = Loanaccount::findOrFail($id);
-
-		$loanbalance = Loantransaction::getLoanBalance($loanaccount);
-
-		$principal_due = Loantransaction::getPrincipalDue($loanaccount);
-
-		$interest = Loanaccount::getInterestAmount($loanaccount);
-
-		$interest_due = Loantransaction::getInterestDue($loanaccount);
-
-		if(Confide::user()->user_type == 'member'){
-
-		return View::make('css.loanpay', compact('loanaccount', 'principal_due', 'interest_due', 'loanbalance', 'interest'));
-	    }else{
-		return View::make('loanrepayments.create', compact('loanaccount', 'principal_due', 'interest_due', 'loanbalance', 'interest'));
-	    }
+						$loanaccount = Loanaccount::findOrFail($id);
+						$loanbalance = Loantransaction::getLoanBalance($loanaccount);
+						$principal_due = $loanaccount->amount_disbursed / $loanaccount->repayment_duration;
+						$interest = Loanaccount::getInterestAmount($loanaccount);
+						$interest_due = Loantransaction::getInterestDue($loanaccount);
+						if(Confide::user()->user_type == 'member'){
+											return View::make('css.loanpay', compact('loanaccount', 'principal_due', 'interest_due', 'loanbalance', 'interest'));
+					 }else{
+										return View::make('loanrepayments.create', compact('loanaccount', 'principal_due', 'interest_due', 'loanbalance', 'interest'));
+					}
 	}
 
 	/**
@@ -47,17 +38,14 @@ class LoanrepaymentsController extends \BaseController {
 	 */
 	public function store()
 	{
-		$validator = Validator::make($data = Input::all(), Loanrepayment::$rules);
-
-		if ($validator->fails())
-		{
-			return Redirect::back()->withErrors($validator)->withInput();
-		}
-
-		$loanaccount = Input::get('loanaccount_id');
-		Loanrepayment::repayLoan($data);
-
-		return Redirect::to('loans/show/'.$loanaccount)->withFlashMessage('Loan successfully repayed!');;
+						$validator = Validator::make($data = Input::all(), Loanrepayment::$rules);
+						if ($validator->fails())
+						{
+							return Redirect::back()->withErrors($validator)->withInput();
+						}
+						$loanaccount = Input::get('loanaccount_id');
+						Loanrepayment::repayLoan($data);
+						return Redirect::to('loans/show/'.$loanaccount)->withFlashMessage('Loan successfully repaid!');;
 	}
 
 
@@ -172,7 +160,7 @@ class LoanrepaymentsController extends \BaseController {
 
 
 		$pdf = PDF::loadView('pdf.offset', compact('loanaccount', 'organization', 'principal_paid', 'interest_due', 'principal_due'))->setPaper('a4')->setOrientation('potrait');
- 	
+
 		return $pdf->stream('Offset.pdf');
 
 
