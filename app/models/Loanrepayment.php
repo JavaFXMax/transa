@@ -33,6 +33,10 @@ class Loanrepayment extends \Eloquent {
 					$category = "Cash";
 					$member = array_get($data, 'member');
 					$date = array_get($data, 'date');
+					$chosen_date= date('d',strtotime($date));
+					$chosen_month =date('m',strtotime($date));
+					$chosen_year =date('Y',strtotime($date));
+					$last_month_date= date('t',strtotime($date));
 					$principal_due = Loanaccount::getLoanAmount($loanaccount) / $loanaccount->repayment_duration;
 					$interest_due = Loantransaction::getInterestDue($loanaccount);
 					$total_due = $principal_due + $interest_due;
@@ -49,7 +53,6 @@ class Loanrepayment extends \Eloquent {
 										 		}elseif($payamount < $interest_due){
 																		Loanrepayment::payInterest($loanaccount, $date, $payamount);
 									 		}
-											$arrears_amount = array_get($data, 'amount_supposed_to_pay') -  array_get($data, 'amount');
 					}
 					if($paymentamount >= $total_due){
 										$payamount = $paymentamount;
@@ -58,49 +61,42 @@ class Loanrepayment extends \Eloquent {
 										$payamount = $payamount - $interest_due;
 										//pay principal with the remaining amount
 										Loanrepayment::payPrincipal($loanaccount, $date, $payamount);
-										$arrears_amount = 0;
 					}
-					Loantransaction::repayLoan($loanaccount, $amount, $date, $category, $member, $arrears_amount);
+					/*Add Arrears Since it is the end of the specific month*/
+					if( $chosen_date >= $last_month_date){
+							$sum_amounts = Loantransaction::where('loanaccount_id','=',$loanaccount)->where('type','=','credit')
+							->where(DB::raw('MONTH(created_at)'), '=', $chosen_month)->where(DB::raw('YEAR(created_at)'), '=', $chosen_year)
+							->sum('amount');
+							$arrears_amount = array_get($data, 'amount_supposed_to_pay') -  $sum_amounts;
+						   Loantransaction::repayLoan($loanaccount, $amount, $date, $category, $member, $arrears_amount);
+					}
+					/*Do not Add Arrears Since it is not yet end of the specific month*/
+					if($chosen_date < $last_month_date){
+						   Loantransaction::repayLoan($loanaccount, $amount, $date, $category, $member, 0);
+					}
 	}
 
 	public static function vrepayLoan($loanamt,$loanaccount_id,$member,$vid){
-
-		$loanaccount = Loanaccount::findorfail($loanaccount_id);
-
-        $amount = $loanamt;
-
-		$category = "Cash";
-		$date = date('Y-m-d');
-
-
-		$principal_due = Loantransaction::getPrincipalDue($loanaccount);
-		$interest_due = Loantransaction::getInterestDue($loanaccount);
-
-		$total_due = $principal_due + $interest_due;
-
-		$paymentamount = $amount;
-
-
-
- 	if($paymentamount < $total_due){
- 		$payamount = $paymentamount;
-			//pay interest first
- 		if($payamount >= $interest_due){
-			Loanrepayment::payInterest($loanaccount, $date, $interest_due);
-			$payamount = $payamount - $interest_due;
-			if($payamount > 0){
-				Loanrepayment::payPrincipal($loanaccount, $date, $payamount);
-			}
- 		}
-
- 		elseif($payamount < $interest_due){
-			Loanrepayment::payInterest($loanaccount, $date, $payamount);
-
-
- 		}
-
-
-
+					$loanaccount = Loanaccount::findorfail($loanaccount_id);
+			  	$amount = $loanamt;
+					$category = "Cash";
+					$date = date('Y-m-d');
+					$principal_due = Loantransaction::getPrincipalDue($loanaccount);
+					$interest_due = Loantransaction::getInterestDue($loanaccount);
+					$total_due = $principal_due + $interest_due;
+					$paymentamount = $amount;
+				 	if($paymentamount < $total_due){
+				 				$payamount = $paymentamount;
+										//pay interest first
+									 		if($payamount >= $interest_due){
+														Loanrepayment::payInterest($loanaccount, $date, $interest_due);
+														$payamount = $payamount - $interest_due;
+														if($payamount > 0){
+															Loanrepayment::payPrincipal($loanaccount, $date, $payamount);
+														}
+									 		}elseif($payamount < $interest_due){
+												Loanrepayment::payInterest($loanaccount, $date, $payamount);
+				 		}
 	}
 
 
@@ -112,22 +108,9 @@ class Loanrepayment extends \Eloquent {
 			$payamount = $payamount - $interest_due;
 
 			//pay principal with the remaining amount
-
 			Loanrepayment::payPrincipal($loanaccount, $date, $payamount);
 		}
-
-
-
-
-
-
 		Loantransaction::vrepayLoan($loanaccount, $amount, $date, $category, $member, $vid);
-
-
-
-
-
-
 	}
 
 

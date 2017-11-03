@@ -50,9 +50,11 @@ class SharetransactionsController extends \BaseController {
 						$sharetransaction->date = Input::get('date');
 						$sharetransaction->shareaccount()->associate($shareaccount);
 				    if(!empty(Input::get('fee_amount'))){
-										$sharetransaction->amount =Input::get('fee_amount');
+					 					$sharetransaction->amount =Input::get('fee_amount');
 				     }
-						 $sharetransaction->amount =0;
+						 if(empty(Input::get('fee_amount'))){
+							 			$sharetransaction->amount =0;
+ 				     }
 						$sharetransaction->type = Input::get('type');
 		        $sharetransaction->pay_for = 'membership';
 						$sharetransaction->description = Input::get('description');
@@ -61,10 +63,12 @@ class SharetransactionsController extends \BaseController {
 						$sharetransaction1 = new Sharetransaction;
 						$sharetransaction1->date = Input::get('date');
 						$sharetransaction1->shareaccount()->associate($shareaccount);
-		        if(!empty(Input::get('amount'))){
-								$sharetransaction1->amount = Input::get('amount');
+		        if(!empty(Input::get('amount') )){
+									$sharetransaction1->amount = Input::get('amount');
 		        }
-						$sharetransaction1->amount = 0;
+						if(empty(Input::get('amount'))){
+									$sharetransaction1->amount = 0;
+		        }
 						$sharetransaction1->type = Input::get('type');
 		        $sharetransaction1->pay_for = 'shares';
 						$sharetransaction1->description = Input::get('description');
@@ -76,12 +80,14 @@ class SharetransactionsController extends \BaseController {
 						if(!empty(Input::get('petrol_investment'))){
 								$sharetransaction2->amount =Input::get('petrol_investment');
 		        }
-						$sharetransaction2->amount =0;
+						if(empty(Input::get('petrol_investment'))){
+								$sharetransaction2->amount =0;
+		        }
 						$sharetransaction2->type = Input::get('type');
 						$sharetransaction2->pay_for='petrol';
 						$sharetransaction2->description = "Petrol Station Investment";
 						$sharetransaction2->save();
-
+						/*Redirect to loans.show view*/
 						return Redirect::to('sharetransactions/show/'.$shareaccount->id);
 	}
 

@@ -7,16 +7,16 @@ function asMoney($value) {
 }
 ?>
 <div class="row">
-<div class="col-lg-4">
-<table class="table table-hover">
-  <tr>
-    <td>Member</td><td>{{ $loanaccount->member->name }}</td>
-  </tr>
-  <tr>
-    <td>Loan Account</td><td>{{ $loanaccount->account_number }}</td>
-  </tr>
-</table>
-</div>
+          <div class="col-lg-4">
+                  <table class="table table-hover">
+                    <tr>
+                      <td>Member</td><td>{{ $loanaccount->member->name }}</td>
+                    </tr>
+                    <tr>
+                      <td>Loan Account</td><td>{{ $loanaccount->account_number }}</td>
+                    </tr>
+                  </table>
+          </div>
     @if (Session::has('flash_message'))
       <div class="alert alert-success">
       {{ Session::get('flash_message') }}
@@ -38,66 +38,66 @@ function asMoney($value) {
 </div>
 <hr>
 <div class="row">
-<div class="col-lg-4">
-<table class="table table-bordered table-hover">
-	<tr>
-		<td>Loan Type</td><td>{{ $loanaccount->loanproduct->name}}</td>
-	</tr>
-	<tr>
-		<td>Date Disbursed</td><td>{{ $loanaccount->date_disbursed}}</td>
-	</tr>
-	<tr>
-		<td>Amount Disbursed</td><td>{{ asMoney($loanaccount->amount_disbursed)}}</td>
-	</tr>
-  @if($loanaccount->is_top_up)
-  <tr>
-    <td>Top Up Amount</td><td>{{ asMoney($loanaccount->top_up_amount)}}</td>
-  </tr>
-  @endif
-	<!-- <tr>
-		<td>Interest Amount</td><td>{{ asMoney($interest)}}</td>
-	</tr>
-  <tr>
-    <td>Loan Amount</td><td>{{ asMoney(Loanaccount::getLoanAmount($loanaccount))}}</td>
-  </tr>
- -->
-</table>
-</div>
-<div class="col-lg-4">
-<table class="table table-bordered table-hover">
-	<tr>
-		<td>Principal Paid</td><td>{{ asMoney($principal_paid)}}</td>
-	</tr>
-	<tr>
-		<td>Interest Paid</td><td>{{ asMoney($interest_paid)}}</td>
-	</tr>
-	<tr>
-		<td>Principal Balance </td><td>{{ asMoney(Loanaccount::getPrincipalBal($loanaccount))}}</td>
-	</tr>
-  <tr>
-    <td> Loan Balance </td>
-    <td>{{ asMoney(Loantransaction::getLoanBalance($loanaccount))}}</td>
-  </tr>
-  <!--
-	<tr>
-		<td>Interest Balance</td><td>{{ asMoney($interest - $interest_paid)}}</td>
-	</tr>
--->
-</table>
-</div>
-<div class="col-lg-4">
-<table class="table table-bordered table-hover">
-  <tr>
-    <td>Loan Period</td><td>{{ $loanaccount->period." months"}}</td>
-  </tr>
-  <tr>
-    <td>Interest rate</td><td>{{  $loanaccount->interest_rate." %"}}</td>
-  </tr>
-  <tr>
-    <td>Repayment Duration </td><td>{{  $loanaccount->repayment_duration." months"}}</td>
-  </tr>
-</table>
-</div>
+          <div class="col-lg-4">
+                <table class="table table-bordered table-hover">
+                        	<tr>
+                        		<td>Loan Type</td><td>{{ $loanaccount->loanproduct->name}}</td>
+                        	</tr>
+                        	<tr>
+                        		<td>Date Disbursed</td><td>{{ $loanaccount->date_disbursed}}</td>
+                        	</tr>
+                        	<tr>
+                        		<td>Amount Disbursed</td><td>{{ asMoney($loanaccount->amount_disbursed)}}</td>
+                        	</tr>
+                          @if($loanaccount->is_top_up)
+                          <tr>
+                            <td>Top Up Amount</td><td>{{ asMoney($loanaccount->top_up_amount)}}</td>
+                          </tr>
+                          @endif
+                        	<!-- <tr>
+                        		<td>Interest Amount</td><td>{{ asMoney($interest)}}</td>
+                        	</tr>
+                          <tr>
+                            <td>Loan Amount</td><td>{{ asMoney(Loanaccount::getLoanAmount($loanaccount))}}</td>
+                          </tr>
+                         -->
+                </table>
+          </div>
+        <div class="col-lg-4">
+                <table class="table table-bordered table-hover">
+                      	<tr>
+                      		<td>Principal Paid</td><td>{{ asMoney($principal_paid)}}</td>
+                      	</tr>
+                      	<tr>
+                      		<td>Interest Paid</td><td>{{ asMoney($interest_paid)}}</td>
+                      	</tr>
+                      	<tr>
+                      		<td>Principal Balance </td><td>{{ asMoney(Loanaccount::getPrincipalBal($loanaccount))}}</td>
+                      	</tr>
+                        <tr>
+                          <td> Loan Balance </td>
+                          <td>{{ asMoney(Loantransaction::getLoanBalance($loanaccount))}}</td>
+                        </tr>
+                        <!--
+                      	<tr>
+                      		<td>Interest Balance</td><td>{{ asMoney($interest - $interest_paid)}}</td>
+                      	</tr>
+                      -->
+                </table>
+        </div>
+        <div class="col-lg-4">
+              <table class="table table-bordered table-hover">
+                      <tr>
+                        <td>Loan Period</td><td>{{ $loanaccount->period." months"}}</td>
+                      </tr>
+                      <tr>
+                        <td>Interest rate</td><td>{{  $loanaccount->interest_rate." %"}}</td>
+                      </tr>
+                      <tr>
+                        <td>Repayment Duration </td><td>{{  $loanaccount->repayment_duration." months"}}</td>
+                      </tr>
+              </table>
+        </div>
 </div>
 </div>
 <div class="row">
@@ -139,17 +139,18 @@ function asMoney($value) {
             <tr>
               <td>0</td>
               <td>
-              <?php
-            $date = date("d-M-Y", strtotime($loanaccount->date_disbursed));
-            ?>
-                {{ $date }}</td>
+                  <?php
+                  $date = date("d-F-Y", strtotime($loanaccount->date_disbursed));
+                  ?>
+                  {{ $date }}
+              </td>
               <td>{{ asMoney($loanaccount->amount_disbursed + $loanaccount->top_up_amount)}}</td>
               <td>{{ asMoney(Loanaccount::getInterestAmount($loanaccount))}}</td>
               <td>{{ asMoney(Loanaccount::getLoanAmount($loanaccount))  }}</td>
               <td>{{ asMoney(Loanaccount::getLoanAmount($loanaccount))  }}</td>
             </tr>
             <?php
-                $date = date("d-M-Y", strtotime($loanaccount->repayment_start_date));
+                $date = date("d-F-Y", strtotime($loanaccount->repayment_start_date));
                 $interest = Loanaccount::getInterestAmount($loanaccount);
                 $principal = $loanaccount->amount_disbursed + $loanaccount->top_up_amount;
                 $balance = Loanaccount::getLoanAmount($loanaccount);
@@ -194,7 +195,7 @@ function asMoney($value) {
             <?php
               $balance = $balance - $total;
               $days = $days + 30;
-              $date = date('d-M-Y', strtotime($date. ' + 30 days'));
+              $date = date('d-F-Y', strtotime($date. ' + 30 days'));
               } ?>
           </tbody>
         </table>

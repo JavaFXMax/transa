@@ -16,17 +16,17 @@ class LoanaccountsController extends \BaseController {
 
 	public function guarantor()
 	{
-		$member = Member::where('membership_no',Confide::user()->username)->first();
-		//$loanaccounts = Loanaccount::where('member_id',$member->id)->get();
-        $loanaccounts = DB::table('loanaccounts')
-		               ->join('loanguarantors', 'loanaccounts.id', '=', 'loanguarantors.loanaccount_id')
-		               ->join('loanproducts', 'loanaccounts.loanproduct_id', '=', 'loanproducts.id')
-		               ->join('members', 'loanaccounts.member_id', '=', 'members.id')
-		               ->where('loanguarantors.member_id',$member->id)
-		               ->where('loanguarantors.is_approved','pending')
-		               ->select('loanaccounts.id','members.name as mname','loanproducts.name as pname','application_date','amount_applied','repayment_duration','loanaccounts.interest_rate')
-		               ->get();
-		return View::make('css.loanindex', compact('loanaccounts'));
+						$member = Member::where('membership_no',Confide::user()->username)->first();
+						//$loanaccounts = Loanaccount::where('member_id',$member->id)->get();
+		        $loanaccounts = DB::table('loanaccounts')
+				               ->join('loanguarantors', 'loanaccounts.id', '=', 'loanguarantors.loanaccount_id')
+				               ->join('loanproducts', 'loanaccounts.loanproduct_id', '=', 'loanproducts.id')
+				               ->join('members', 'loanaccounts.member_id', '=', 'members.id')
+				               ->where('loanguarantors.member_id',$member->id)
+				               ->where('loanguarantors.is_approved','pending')
+				               ->select('loanaccounts.id','members.name as mname','loanproducts.name as pname','application_date','amount_applied','repayment_duration','loanaccounts.interest_rate')
+				               ->get();
+						return View::make('css.loanindex', compact('loanaccounts'));
 	}
 
 	/**
@@ -36,23 +36,20 @@ class LoanaccountsController extends \BaseController {
 	 */
 	public function apply($id)
 	{
-
-		$member = Member::find($id);
-		$guarantors = Member::where('id','!=',$id)->get();
-		$loanproducts = Loanproduct::all();
-		return View::make('loanaccounts.create', compact('member', 'guarantors', 'loanproducts'));
+					$member = Member::find($id);
+					$guarantors = Member::where('id','!=',$id)->get();
+					$loanproducts = Loanproduct::all();
+					return View::make('loanaccounts.create', compact('member', 'guarantors', 'loanproducts'));
 	}
 
 
 
 	public function apply2($id)
 	{
-
-		$member = Member::find($id);
+				$member = Member::find($id);
         $guarantors = Member::where('id','!=',$id)->get();
-		$loanproducts = Loanproduct::all();
-
-		return View::make('css.loancreate', compact('member', 'guarantors', 'loanproducts'));
+				$loanproducts = Loanproduct::all();
+				return View::make('css.loancreate', compact('member', 'guarantors', 'loanproducts'));
 	}
 
 	/**
@@ -470,41 +467,40 @@ public function shopapplication()
 
 
 	public function topup($id){
-		$data = Input::all();
+				$data = Input::all();
         $amount=$data['amount'];
-		$date=$data['top_up_date'];
-		//include the new function here
-		$loanaccount = Loanaccount::findOrFail($data['loanaccount']);
+				$date=$data['top_up_date'];
+				//include the new function here
+				$loanaccount = Loanaccount::findOrFail($data['loanaccount']);
         /*Get Loan Balance*/
         $loan_balance= Loantransaction::getLoanBalance($loanaccount);
         /*110% of Loan Balance*/
         $amount_to_top= 1.1 * $loan_balance;
         $sacco_income= 0.1 * $loan_balance;
-
         if($amount <= $amount_to_top){
             return Redirect::back()->withCaution('Top up amount should be greater than
             110% of the loan balance');
         }
         /*Pay Remaining Balance*/
         $transaction = new Loantransaction;
-		$transaction->loanaccount()->associate($loanaccount);
-		$transaction->date = $date;
-		$transaction->description = 'loan repayment';
-		$transaction->amount = $loan_balance;
-		$transaction->type = 'credit';
-		$transaction->payment_via = 'Cash';
-		$transaction->save();
+				$transaction->loanaccount()->associate($loanaccount);
+				$transaction->date = $date;
+				$transaction->description = 'loan repayment';
+				$transaction->amount = $loan_balance;
+				$transaction->type = 'credit';
+				$transaction->payment_via = 'Cash';
+				$transaction->save();
         /*Make a journal Entry*/
         $journal = new Journal;
         $account = Account::where('category','=','INCOME')->get()->first();
-		$journal->account()->associate($account);
-		$journal->date = $date;
-		$journal->trans_no = strtotime($date);
-		$journal->initiated_by = Confide::user()->username;
-		$journal->amount = $sacco_income;
-		$journal->type = 'credit';
-		$journal->description = "Loan Top Up Charge";
-		$journal->save();
+				$journal->account()->associate($account);
+				$journal->date = $date;
+				$journal->trans_no = strtotime($date);
+				$journal->initiated_by = Confide::user()->username;
+				$journal->amount = $sacco_income;
+				$journal->type = 'credit';
+				$journal->description = "Loan Top Up Charge";
+				$journal->save();
         /*Create a Separate Loan Account*/
         if($amount >0){
             $loanaccount_topped= new Loanaccount;
@@ -527,7 +523,6 @@ public function shopapplication()
                 $insurance_journal->type = 'credit';
                 $insurance_journal->description = "Loan Insurance Fee";
                 $insurance_journal->save();
-
             $loanaccount_topped->interest_rate = $loanaccount->interest_rate;
             $loanaccount_topped->period = $loanaccount->period;
             $loanaccount_topped->repayment_duration = $loanaccount->repayment_duration;
@@ -537,22 +532,21 @@ public function shopapplication()
             $loanaccount_topped->is_disbursed=TRUE;
             $loanaccount_topped->amount_disbursed=$amount_taken;
             $loanaccount_topped->date_disbursed=$date;
-
             $loanaccount_topped->save();
 
             Loantransaction::disburseLoan($loanaccount_topped, $amount_taken, $date);
         }
-		//Loantransaction::topupLoan($loanaccount, $top_up_amount, $date);
-		return Redirect::to('loans/show/'.$loanaccount_topped->id);
+				//Loantransaction::topupLoan($loanaccount, $top_up_amount, $date);
+				return Redirect::to('loans/show/'.$loanaccount_topped->id);
 	}
 
 	public function topupReport($id){
-		$topups=Topup::where('loanaccount_id',$id)->get();
-		$loanaccount=Loanaccount::find($id);
-	    $organization = Organization::find(1);
-	    $pdf = PDF::loadView('pdf.loanreports.topups', compact('topups','loanaccount', 'organization'))
-	    ->setPaper('a4')->setOrientation('potrait');
-	    return $pdf->stream('Top Up Report.pdf');
+					$topups=Topup::where('loanaccount_id',$id)->get();
+					$loanaccount=Loanaccount::find($id);
+			    $organization = Organization::find(1);
+			    $pdf = PDF::loadView('pdf.loanreports.topups', compact('topups','loanaccount', 'organization'))
+			    ->setPaper('a4')->setOrientation('potrait');
+			    return $pdf->stream('Top Up Report.pdf');
 	}
 
 }

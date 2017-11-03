@@ -275,97 +275,62 @@ class Loanaccount extends \Eloquent {
 
     }*/
 
-
 		Audit::logAudit(date('Y-m-d'), Confide::user()->username, 'loan application', 'Loans', array_get($data, 'amount_applied'));
 
 	}
 
-
-
-
 	public static function submitShopApplication($data){
-
-
-
-
-
-
-		$mem = array_get($data, 'member');
-
-
-
-
-
-		$member_id = DB::table('members')->where('membership_no', '=', $mem)->pluck('id');
-
-
-		$loanproduct_id = array_get($data, 'loanproduct');
-
-
-		$member = Member::findorfail($member_id);
-
-		$product = Product::findorfail(array_get($data, 'product'));
-
-		$loanproduct = Loanproduct::findorfail($loanproduct_id);
-
-
-		$application = new Loanaccount;
-
-
-		$application->member()->associate($member);
-		$application->loanproduct()->associate($loanproduct);
-		$application->application_date = date('Y-m-d');
-
-		$application->amount_applied = array_get($data, 'amount');
-
-
-
-
-		$application->interest_rate = $loanproduct->interest_rate;
-		$application->period = array_get($data, 'repayment');
-
-
-
-		$application->repayment_duration = array_get($data, 'repayment');
-		$application->loan_purpose = array_get($data, 'purpose');
-		$application->save();
-
-
-		Order::submitOrder($product, $member);
+							$mem = array_get($data, 'member');
+							$member_id = DB::table('members')->where('membership_no', '=', $mem)->pluck('id');
+							$loanproduct_id = array_get($data, 'loanproduct');
+							$member = Member::findorfail($member_id);
+							$product = Product::findorfail(array_get($data, 'product'));
+							$loanproduct = Loanproduct::findorfail($loanproduct_id);
+							$application = new Loanaccount;
+							$application->member()->associate($member);
+							$application->loanproduct()->associate($loanproduct);
+							$application->application_date = date('Y-m-d');
+							$application->amount_applied = array_get($data, 'amount');
+							$application->interest_rate = $loanproduct->interest_rate;
+							$application->period = array_get($data, 'repayment');
+							$application->repayment_duration = array_get($data, 'repayment');
+							$application->loan_purpose = array_get($data, 'purpose');
+							$application->save();
+							Order::submitOrder($product, $member);
 	}
 	public static function loanAccountNumber($loanaccount){
-		$member = Member::find($loanaccount->member->id);
-		$count = count($member->loanaccounts);
-		$count = $count + 1;
-		//$count = DB::table('loanproducts')->where('member_id', '=', $loanaccount->member->id)->count();
-		$loanno = $loanaccount->loanproduct->short_name."-".$loanaccount->member->membership_no."-".$count;
-		return $loanno;
+						$member = Member::find($loanaccount->member->id);
+						$count = count($member->loanaccounts);
+						$count = $count + 1;
+						//$count = DB::table('loanproducts')->where('member_id', '=', $loanaccount->member->id)->count();
+						$loanno = $loanaccount->loanproduct->short_name."-".$loanaccount->member->membership_no."-".$count;
+						return $loanno;
 	}
 
 	public static function intBalOffset($loanaccount){
-		$principal = Loanaccount::getPrincipalBal($loanaccount);
-		$rate = $loanaccount->interest_rate/100;
-		$time = $loanaccount->repayment_duration;
-		$formula = $loanaccount->loanproduct->formula;
-		if($formula == 'SL'){
-			$interest_amount = $principal * $rate;
-		}
-		if($formula == 'RB'){
-   			$principal_bal = $principal;
-    		$interest_amount = $principal_bal * $rate;
-		}
-		return $interest_amount;
+						$principal = Loanaccount::getPrincipalBal($loanaccount);
+						$rate = $loanaccount->interest_rate/100;
+						$time = $loanaccount->repayment_duration;
+						$formula = $loanaccount->loanproduct->formula;
+						if($formula == 'SL'){
+							$interest_amount = $principal * $rate;
+						}
+						if($formula == 'RB'){
+				   			$principal_bal = $principal;
+				    		$interest_amount = $principal_bal * $rate;
+						}
+						return $interest_amount;
 	}
 
 
 	public static function getEMPTacsix($loanaccount){
-				$principal = $loanaccount->amount_disbursed;
-				$rate = $loanaccount->interest_rate/100;
-				$time = $loanaccount->repayment_duration;
-				$interest = $principal * $rate * $time;
-				$amount = $principal + $interest;
-				$amt = $amount/$time;
-				return $amt;
+						$principal = $loanaccount->amount_disbursed;
+						$rate = $loanaccount->interest_rate/100;
+						$time = $loanaccount->repayment_duration;
+						$interest = $principal * $rate * $time;
+						$amount = $principal + $interest;
+						$amt = $amount/$time;
+						return $amt;
 	}
 
 	public static function getInterestAmount($loanaccount){
@@ -420,7 +385,6 @@ class Loanaccount extends \Eloquent {
 						}
 	}
 
-
 	public static function getDurationAmount($loanaccount){
 								$interest = Loanaccount::getInterestAmount($loanaccount);
 								$principal = $loanaccount->amount_disbursed;
@@ -433,7 +397,6 @@ class Loanaccount extends \Eloquent {
 								return $amount;
 	}
 
-
 	public static function getLoanAmount($loanaccount){
 					$interest_amount = Loanaccount::getInterestAmount($loanaccount);
 					$principal = $loanaccount->amount_disbursed;
@@ -444,28 +407,27 @@ class Loanaccount extends \Eloquent {
 
 
 	public static function getEMP($loanaccount){
-				$loanamount = Loanaccount::getLoanAmount($loanaccount);
-				if($loanaccount->repayment_duration > 0){
-					$period = $loanaccount->repayment_duration;
-				}
-				else {
-					$period = $loanaccount->period;
-				}
-			if($loanaccount->loanproduct->amortization == 'EP'){
-								if($loanaccount->loanproduct->formula == 'RB'){
-										$principal = $loanaccount->amount_disbursed + $loanaccount->top_up_amount;
-										$principal = $principal/$period;
-										$interest = (Loantransaction::getLoanBalance($loanaccount) * ($loanaccount->loanproduct->rate/100));
-										$mp = $principal + $interest;
-									}
-									if($loanaccount->loanproduct->formula == 'SL'){
-										 $mp = $loanamount/$period;
-									}
-			}
-		if($loanaccount->loanproduct->amortization == 'EI'){
-					$mp = $loanamount / $loanaccount->repayment_duration;
-		}
-		return $mp;
+								$loanamount = Loanaccount::getLoanAmount($loanaccount);
+								if($loanaccount->repayment_duration > 0){
+									$period = $loanaccount->repayment_duration;
+								}else {
+									$period = $loanaccount->period;
+								}
+							if($loanaccount->loanproduct->amortization == 'EP'){
+												if($loanaccount->loanproduct->formula == 'RB'){
+														$principal = $loanaccount->amount_disbursed + $loanaccount->top_up_amount;
+														$principal = $principal/$period;
+														$interest = Loantransaction::getLoanBalance($loanaccount) * ($loanaccount->loanproduct->rate/100);
+														$mp = $principal + $interest;
+													}
+													if($loanaccount->loanproduct->formula == 'SL'){
+														 $mp = $loanamount/$period;
+													}
+							}
+						if($loanaccount->loanproduct->amortization == 'EI'){
+									$mp = $loanamount / $loanaccount->repayment_duration;
+						}
+						return $mp;
 	}
 
 	public static function getInterestBal($loanaccount){
@@ -476,10 +438,36 @@ class Loanaccount extends \Eloquent {
 	}
 
 	public static function getPrincipalBal($loanaccount){
-					$principal_amount = $loanaccount->amount_disbursed + $loanaccount->top_up_amount;
-					$principal_paid = Loanrepayment::getPrincipalPaid($loanaccount);
-					$principal_bal = $principal_amount - $principal_paid;
-					return $principal_bal;
+					/*Get Last Transaction*/
+					$last_transaction= Loantransaction::where('loanaccount_id','=',$loanaccount->id)->orderBy('id','desc')->get()->first();
+					/*If last transaction record exists*/
+					if(!empty($last_transaction)){
+								/*If Arrears exists*/
+									if($last_transaction->arrears >0){
+												$last_principal=  $loanaccount->amount_disbursed / $loanaccount->repayment_duration;
+												$principal_amount = $loanaccount->amount_disbursed + $loanaccount->top_up_amount;
+												$principal_paid = Loanrepayment::getPrincipalPaid($loanaccount);
+												$principal_balance = $principal_amount - $principal_paid;
+												$interest_balance = $principal_balance * ($loanaccount->interest_rate)/100;
+												$total_balance = $principal_balance + $interest_balance;
+												$principal_bal = $principal_balance + $interest_balance;
+												return $principal_bal;
+									}
+									/*If not loan arrears*/
+									if($last_transaction->arrears <=0){
+												$principal_amount = $loanaccount->amount_disbursed + $loanaccount->top_up_amount;
+												$principal_paid = Loanrepayment::getPrincipalPaid($loanaccount);
+												$principal_bal = $principal_amount - $principal_paid;
+												return $principal_bal;
+									}
+					}
+					/*Default when no transaction has been recorded*/
+					if(empty($last_transaction)){
+								$principal_amount = $loanaccount->amount_disbursed + $loanaccount->top_up_amount;
+								$principal_paid = Loanrepayment::getPrincipalPaid($loanaccount);
+								$principal_bal = $principal_amount - $principal_paid;
+								return $principal_bal;
+					}
 	}
 
 	public static function getDeductionAmount($loanaccount, $date){

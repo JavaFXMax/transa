@@ -33,13 +33,13 @@ class Loantransaction extends \Eloquent {
 					$loanamount = Loanaccount::getLoanAmount($loanaccount);
 					$balance = $loanamount - $payments;
 					**********************************************/
+					/*Get Last Transaction*/
 					$principal_bal = Loanaccount::getPrincipalBal($loanaccount);
 					$rate = $loanaccount->interest_rate/100;
 					$interest_due = $principal_bal * $rate;
 					$balance = $principal_bal + $interest_due;
 					return $balance;
 	}
-
 
 	public static function getRemainingPeriod($loanaccount){
 				$paid_periods = DB::table('loantransactions')->where('void',0)->where('loanaccount_id', '=', $loanaccount->id)->where('description', '=', 'loan repayment')->count();
@@ -91,7 +91,7 @@ class Loantransaction extends \Eloquent {
 									$interest_balance = $interest_amount - $interest_paid;
 									$interest_due = 0;
 									if($interest_balance > 0 && $remaining_period > 0){
-										$interest_due = $principal_balance * ($loanaccount->interest_rate/100);
+													$interest_due = $principal_balance * ($loanaccount->interest_rate/100);
 									}
 									//if($loanaccount->loanproduct->amortization == 'EI'){
 										//$interest_due = $interest_amount / $loanaccount->repayment_duration;
@@ -110,57 +110,51 @@ class Loantransaction extends \Eloquent {
 					$transaction->arrears = $arrears;
 					$transaction->payment_via = $category;
 					$transaction->save();
+					/*Record an audit trail*/
 					Audit::logAudit($date, Confide::user()->username, 'loan repayment', 'Loans', $amount);
 	}
 
     public static function vrepayLoan($loanaccount, $amount, $date, $category, $member, $vid){
+							$transaction = new Loantransaction;
+							$transaction->loanaccount()->associate($loanaccount);
+							$transaction->date = $date;
+							$transaction->description = 'loan repayment';
+							$transaction->amount = str_replace( ',', '', $amount);
+							$transaction->type = 'credit';
+							$transaction->payment_via = $category;
+							$transaction->save();
 
-		$transaction = new Loantransaction;
-
-		$transaction->loanaccount()->associate($loanaccount);
-		$transaction->date = $date;
-		$transaction->description = 'loan repayment';
-		$transaction->amount = str_replace( ',', '', $amount);
-		$transaction->type = 'credit';
-		$transaction->payment_via = $category;
-		$transaction->save();
-
-		$vehsav = Vehicleincome::where('id',$vid)->first();
-        $vehsav->loantransaction_id = $transaction->id;
-        $vehsav->loanaccount_id = $loanaccount->id;
-
-        $vehsav->update();
-
-		Audit::logAudit($date, Confide::user()->username, 'loan repayment', 'Loans', $amount);
-
-
-
+							$vehsav = Vehicleincome::where('id',$vid)->first();
+			        $vehsav->loantransaction_id = $transaction->id;
+			        $vehsav->loanaccount_id = $loanaccount->id;
+			        $vehsav->update();
+							Audit::logAudit($date, Confide::user()->username, 'loan repayment', 'Loans', $amount);
 	}
 
 	public static function disburseLoan($loanaccount, $amount, $date){
-		$transaction = new Loantransaction;
-		$transaction->loanaccount()->associate($loanaccount);
-		$transaction->date = $date;
-		$transaction->description = 'loan disbursement';
-		$transaction->amount = $amount;
-		$transaction->type = 'debit';
-		$transaction->save();
-
-
-		$account = Loanposting::getPostingAccount($loanaccount->loanproduct, 'disbursal');
-
-		$data = array(
-			'credit_account' =>$account['credit'] ,
-			'debit_account' =>$account['debit'] ,
-			'date' => $date,
-			'amount' => $loanaccount->amount_disbursed,
-			'initiated_by' => 'system',
-			'description' => 'loan disbursement'
-
-			);
-		$journal = new Journal;
-		$journal->journal_entry($data);
-		Audit::logAudit($date, Confide::user()->username, 'loan disbursement', 'Loans', $amount);
+								$transaction = new Loantransaction;
+								$transaction->loanaccount()->associate($loanaccount);
+								$transaction->date = $date;
+								$transaction->description = 'loan disbursement';
+								$transaction->amount = $amount;
+								$transaction->type = 'debit';
+								$transaction->save();
+								/*Post Transaction*/
+								$account = Loanposting::getPostingAccount($loanaccount->loanproduct, 'disbursal');
+								/*Data to include in the journal*/
+								$data = array(
+													'credit_account' =>$account['credit'] ,
+													'debit_account' =>$account['debit'] ,
+													'date' => $date,
+													'amount' => $loanaccount->amount_disbursed,
+													'initiated_by' => 'system',
+													'description' => 'loan disbursement'
+									);
+									/*Record a Journal*/
+								$journal = new Journal;
+								$journal->journal_entry($data);
+								/*Record Audit*/
+								Audit::logAudit($date, Confide::user()->username, 'loan disbursement', 'Loans', $amount);
 	}
 
 	public static function topupLoan($loanaccount, $amount, $date){

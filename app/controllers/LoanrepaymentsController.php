@@ -44,7 +44,9 @@ class LoanrepaymentsController extends \BaseController {
 							return Redirect::back()->withErrors($validator)->withInput();
 						}
 						$loanaccount = Input::get('loanaccount_id');
+						/*Repay Loan amount*/
 						Loanrepayment::repayLoan($data);
+						/*Redirect to show loanaccount view*/
 						return Redirect::to('loans/show/'.$loanaccount)->withFlashMessage('Loan successfully repaid!');;
 	}
 
@@ -52,17 +54,13 @@ class LoanrepaymentsController extends \BaseController {
 
 	public function offsetloan()
 	{
-		$validator = Validator::make($data = Input::all(), Loanrepayment::$rules);
-
-		if ($validator->fails())
-		{
-			return Redirect::back()->withErrors($validator)->withInput();
-		}
-
-		$loanaccount = Input::get('loanaccount_id');
-		Loanrepayment::offsetLoan($data);
-
-		return Redirect::to('loans/show/'.$loanaccount);
+				$validator = Validator::make($data = Input::all(), Loanrepayment::$rules);
+				if ($validator->fails()){
+					return Redirect::back()->withErrors($validator)->withInput();
+				}
+				$loanaccount = Input::get('loanaccount_id');
+				Loanrepayment::offsetLoan($data);
+				return Redirect::to('loans/show/'.$loanaccount);
 	}
 
 	/**

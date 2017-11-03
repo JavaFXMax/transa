@@ -265,7 +265,6 @@ class VehicleIncomesController extends \BaseController {
         	);
         }
         //Contribution::nadd($dt, Input::get('asset_id'), Input::get('ainc_id') );
-
 		return Redirect::route('vehicleincomes.index');
 	}
 
@@ -328,34 +327,29 @@ class VehicleIncomesController extends \BaseController {
 			return Redirect::back()->withErrors($validator)->withInput();
 		}
 
-		$vid = $id;
-
+				$vid = $id;
         $assign = Vehicle::where('id',Input::get('vehicle_id'))->first();
-
         $vehicle->vehicle_id = Input::get('vehicle_id');
-		$vehicle->amount     = str_replace( ',', '', Input::get('amount'));
-		$vehicle->date = Input::get('date');
-		$vehicle->asset_account_id = Input::get('asset_id');
-		$vehicle->income_account_id = Input::get('ainc_id');
-		$vehicle->equity_account_id = Input::get('eq_id');
-		$vehicle->update();
-
+				$vehicle->amount     = str_replace( ',', '', Input::get('amount'));
+				$vehicle->date = Input::get('date');
+				$vehicle->asset_account_id = Input::get('asset_id');
+				$vehicle->income_account_id = Input::get('ainc_id');
+				$vehicle->equity_account_id = Input::get('eq_id');
+				$vehicle->update();
         $lamt = 0.00;
 
-		if(Input::get('loanproduct_id') != '' ){
-        $lamt = str_replace( ',', '', Input::get('loans'));
-		}else{
-        $lamt = 0.00;
-		}
-
+				if(Input::get('loanproduct_id') != '' ){
+		        $lamt = str_replace( ',', '', Input::get('loans'));
+				}else{
+		        $lamt = 0.00;
+				}
         if(Input::get('offamt') > 0 ){
          $offm = str_replace( ',', '', Input::get('offamt'));
 
 
         $cont = Contribution::where('vehicleincome_id',$id)->first();
-		$cont->is_void = 1;
-		$cont->update();
-
+			$cont->is_void = 1;
+			$cont->update();
 		if($cont->debit_journal_id != null && $cont->credit_journal_id != null){
 		$journal = Journal::findOrFail($cont->credit_journal_id);
         $journal->void = 1;
